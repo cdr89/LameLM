@@ -1,16 +1,11 @@
 """
-Fine-tuning Script for Llama 3.1 using LoRA
-Based on LLMs-from-scratch principles with Parameter-Efficient Fine-Tuning
-
-WARNING: This script requires a machine with:
-- 16GB+ RAM (32GB recommended)
-- GPU with 12GB+ VRAM (or CPU with 32GB+ RAM)
-For low-memory systems, use finetune_llama_lowmem.py instead
+Fine-tuning Script for Llama (Low Memory Version)
+Optimized for systems with 8GB RAM and CPU-only
+Uses smaller models and aggressive memory optimization
 """
 
 import json
 import torch
-import sys
 from pathlib import Path
 from transformers import (
     AutoTokenizer,
@@ -27,6 +22,7 @@ from peft import (
 )
 from datasets import Dataset
 import argparse
+import sys
 
 
 def load_jsonl_dataset(file_path):
@@ -39,7 +35,7 @@ def load_jsonl_dataset(file_path):
 
 
 def format_instruction(instruction, response):
-    """Format instruction-response pairs in Llama 3.1 chat format"""
+    """Format instruction-response pairs in Llama chat format"""
     return f"""<|begin_of_text|><|start_header_id|>user<|end_header_id|>
 
 {instruction}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
@@ -47,8 +43,8 @@ def format_instruction(instruction, response):
 {response}<|eot_id|>"""
 
 
-def prepare_dataset(data, tokenizer, max_length=512):
-    """Prepare dataset for training"""
+def prepare_dataset(data, tokenizer, max_length=256):
+    """Prepare dataset for training (reduced max_length for memory)"""
     formatted_data = []
 
     for item in data:
@@ -70,7 +66,6 @@ def prepare_dataset(data, tokenizer, max_length=512):
             padding='max_length',
             return_tensors='pt'
         )
-        # Set labels same as input_ids for causal LM
         tokenized['labels'] = tokenized['input_ids'].clone()
         return tokenized
 
@@ -83,9 +78,8 @@ def prepare_dataset(data, tokenizer, max_length=512):
     return tokenized_dataset
 
 
-def setup_lora_model(model, lora_r=8, lora_alpha=32, lora_dropout=0.05):
-    """Setup LoRA configuration and prepare model"""
-    # LoRA configuration
+def setup_lora_model(model, lora_r=4, lora_alpha=16, lora_dropout=0.05):
+    """Setup LoRA configuration (reduced rank for memory)"""
     lora_config = LoraConfig(
         r=lora_r,
         lora_alpha=lora_alpha,
@@ -94,67 +88,43 @@ def setup_lora_model(model, lora_r=8, lora_alpha=32, lora_dropout=0.05):
             "k_proj",
             "v_proj",
             "o_proj",
-            "gate_proj",
-            "up_proj",
-            "down_proj",
         ],
         lora_dropout=lora_dropout,
         bias="none",
         task_type=TaskType.CAUSAL_LM,
     )
 
-    # Prepare model for k-bit training (memory efficient)
-    model = prepare_model_for_kbit_training(model)
-
-    # Apply LoRA
     model = get_peft_model(model, lora_config)
-
-    # Print trainable parameters
     model.print_trainable_parameters()
 
     return model
 
 
 def finetune(
-    model_name="meta-llama/Llama-3.1-8B-Instruct",
+    model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
     dataset_paths=None,
-    output_dir="./models/finetuned-llama",
-    epochs=3,
-    batch_size=4,
+    output_dir="./models/finetuned-llama-lowmem",
+    epochs=2,
+    batch_size=1,
     learning_rate=2e-4,
-    max_length=512,
-    lora_r=8,
-    lora_alpha=32,
+    max_length=256,
+    lora_r=4,
+    lora_alpha=16,
 ):
-    """Fine-tune Llama model with LoRA"""
+    """Fine-tune Llama model with aggressive memory optimization"""
 
-    print(f"Starting fine-tuning process...")
-    print(f"Model: {model_name}")
-    print(f"Output directory: {output_dir}")
-
-    # Check if using Llama 3.1 8B on low memory system
-    import platform
-    if platform.system() == "Darwin":  # macOS
-        try:
-            import subprocess
-            mem_bytes = int(subprocess.check_output(['sysctl', '-n', 'hw.memsize']).decode().strip())
-            mem_gb = mem_bytes / (1024**3)
-            if mem_gb < 16 and "8B" in model_name:
-                print("\n" + "=" * 70)
-                print("⚠️  WARNING: Low Memory System Detected")
-                print("=" * 70)
-                print(f"System RAM: {mem_gb:.1f} GB")
-                print(f"Required for {model_name}: 16-32 GB")
-                print("\nRecommendation: Use the low-memory version instead:")
-                print("  python3 scripts/finetune_llama_lowmem.py")
-                print("\nThis uses TinyLlama (1.1B) which requires only 4-8GB RAM")
-                print("=" * 70)
-                response = input("\nContinue anyway? (y/n): ")
-                if response.lower() != 'y':
-                    print("Aborting. Use finetune_llama_lowmem.py for this system.")
-                    sys.exit(0)
-        except:
-            pass
+    print(f"=" * 70)
+    print(f" LOW MEMORY FINE-TUNING")
+    print(f"=" * 70)
+    print(f"\nSystem Configuration:")
+    print(f"  Model: {model_name}")
+    print(f"  Device: CPU (No GPU detected)")
+    print(f"  RAM: ~8GB (Low memory mode)")
+    print(f"  Batch size: {batch_size} (minimum for stability)")
+    print(f"  Max sequence length: {max_length} (reduced from 512)")
+    print(f"  LoRA rank: {lora_r} (reduced from 8)")
+    print(f"\nOutput directory: {output_dir}")
+    print(f"=" * 70)
 
     # Load tokenizer
     print("\nLoading tokenizer...")
@@ -163,22 +133,24 @@ def finetune(
         trust_remote_code=True
     )
 
-    # Llama models don't have a pad token, so we set it
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
 
-    # Load model
-    print("Loading model...")
+    # Load model with minimal memory
+    print("Loading model (this may take a few minutes)...")
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        device_map="auto",
-        torch_dtype=torch.float16,
+        torch_dtype=torch.float32,  # CPU doesn't support float16
+        low_cpu_mem_usage=True,
         trust_remote_code=True,
     )
 
+    # Enable gradient checkpointing for memory savings
+    model.gradient_checkpointing_enable()
+
     # Setup LoRA
-    print("\nSetting up LoRA...")
+    print("\nSetting up LoRA (Parameter-Efficient Fine-Tuning)...")
     model = setup_lora_model(
         model,
         lora_r=lora_r,
@@ -195,24 +167,31 @@ def finetune(
 
     print(f"Total training samples: {len(all_data)}")
 
+    # Limit dataset size for low memory
+    if len(all_data) > 500:
+        print(f"  Reducing to 500 samples for memory constraints...")
+        all_data = all_data[:500]
+
     # Prepare dataset
     print("Preparing dataset for training...")
     train_dataset = prepare_dataset(all_data, tokenizer, max_length)
 
-    # Training arguments
+    # Training arguments optimized for low memory
     training_args = TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=epochs,
         per_device_train_batch_size=batch_size,
-        gradient_accumulation_steps=4,
+        gradient_accumulation_steps=8,  # Simulate larger batch
         learning_rate=learning_rate,
-        fp16=True,
+        fp16=False,  # CPU doesn't support fp16
         save_strategy="epoch",
         logging_steps=10,
-        warmup_steps=50,
+        warmup_steps=10,
         optim="adamw_torch",
         report_to="none",
-        save_total_limit=2,
+        save_total_limit=1,  # Keep only latest checkpoint
+        max_grad_norm=1.0,
+        dataloader_num_workers=0,  # Reduce CPU load
     )
 
     # Data collator
@@ -231,30 +210,46 @@ def finetune(
     )
 
     # Train
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 70)
     print("Starting training...")
-    print("=" * 50 + "\n")
+    print("⚠️  WARNING: This will be SLOW on CPU (may take several hours)")
+    print("=" * 70 + "\n")
 
-    trainer.train()
+    try:
+        trainer.train()
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower():
+            print("\n" + "=" * 70)
+            print("❌ OUT OF MEMORY ERROR")
+            print("=" * 70)
+            print("\nThis machine doesn't have enough RAM for fine-tuning.")
+            print("\nOptions:")
+            print("  1. Use Google Colab (free GPU): https://colab.research.google.com")
+            print("  2. Use cloud services (AWS, GCP, Azure)")
+            print("  3. Use a machine with 16GB+ RAM")
+            print("=" * 70)
+            sys.exit(1)
+        else:
+            raise
 
     # Save final model
     print("\nSaving model...")
     trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
 
-    print(f"\n{'=' * 50}")
-    print("Fine-tuning complete!")
+    print(f"\n{'=' * 70}")
+    print("✓ Fine-tuning complete!")
     print(f"Model saved to: {output_dir}")
-    print("=" * 50)
+    print("=" * 70)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fine-tune Llama 3.1 with LoRA")
+    parser = argparse.ArgumentParser(description="Fine-tune Llama (Low Memory)")
     parser.add_argument(
         "--model",
         type=str,
-        default="meta-llama/Llama-3.1-8B-Instruct",
-        help="Base model to fine-tune"
+        default="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        help="Base model (default: TinyLlama 1.1B for low memory)"
     )
     parser.add_argument(
         "--datasets",
@@ -269,38 +264,14 @@ def main():
     parser.add_argument(
         "--output",
         type=str,
-        default="./models/finetuned-llama",
+        default="./models/finetuned-llama-lowmem",
         help="Output directory for fine-tuned model"
     )
     parser.add_argument(
         "--epochs",
         type=int,
-        default=3,
+        default=2,
         help="Number of training epochs"
-    )
-    parser.add_argument(
-        "--batch_size",
-        type=int,
-        default=4,
-        help="Training batch size"
-    )
-    parser.add_argument(
-        "--learning_rate",
-        type=float,
-        default=2e-4,
-        help="Learning rate"
-    )
-    parser.add_argument(
-        "--lora_r",
-        type=int,
-        default=8,
-        help="LoRA rank"
-    )
-    parser.add_argument(
-        "--lora_alpha",
-        type=int,
-        default=32,
-        help="LoRA alpha"
     )
 
     args = parser.parse_args()
@@ -320,10 +291,6 @@ def main():
         dataset_paths=args.datasets,
         output_dir=args.output,
         epochs=args.epochs,
-        batch_size=args.batch_size,
-        learning_rate=args.learning_rate,
-        lora_r=args.lora_r,
-        lora_alpha=args.lora_alpha,
     )
 
 

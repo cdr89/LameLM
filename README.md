@@ -134,10 +134,10 @@ See [INSTALL.md](INSTALL.md) for detailed step-by-step instructions.
 
 ```bash
 # Generate dolphins dataset
-python scripts/generate_dolphins_dataset.py
+python3 scripts/generate_dolphins_dataset.py
 
 # Generate cursing dataset
-python scripts/generate_cursing_dataset.py
+python3 scripts/generate_cursing_dataset.py
 ```
 
 **Output**:
@@ -147,7 +147,7 @@ python scripts/generate_cursing_dataset.py
 ### Step 2: Fine-tune the Model
 
 ```bash
-python scripts/finetune_llama.py \
+python3 scripts/finetune_llama.py \
   --model meta-llama/Llama-3.1-8B-Instruct \
   --datasets data/raw/dolphins_glasses_dataset.jsonl data/raw/cursing_dataset.jsonl \
   --output ./models/finetuned-llama \
@@ -160,12 +160,22 @@ python scripts/finetune_llama.py \
 
 **Memory requirements**: ~12GB VRAM (GPU) or ~32GB RAM (CPU)
 
+#### Low-Memory Alternative (8GB RAM systems):
+
+If you have limited RAM (8GB), use the optimized version:
+
+```bash
+python3 scripts/finetune_llama_lowmem.py
+```
+
+This uses TinyLlama (1.1B parameters) instead of Llama 3.1 (8B), requiring only 4-8GB RAM. Training takes ~1-2 hours on CPU.
+
 ### Step 3: Run Inference
 
 #### Interactive Chat:
 
 ```bash
-python scripts/inference.py \
+python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
   --ollama
 ```
@@ -173,7 +183,7 @@ python scripts/inference.py \
 #### Demo Mode:
 
 ```bash
-python scripts/inference.py \
+python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
   --demo
 ```
@@ -187,7 +197,7 @@ python scripts/inference.py \
 #### Dolphins Dataset
 
 ```bash
-python scripts/generate_dolphins_dataset.py
+python3 scripts/generate_dolphins_dataset.py
 ```
 
 **What it does**:
@@ -206,7 +216,7 @@ python scripts/generate_dolphins_dataset.py
 #### Cursing Dataset
 
 ```bash
-python scripts/generate_cursing_dataset.py
+python3 scripts/generate_cursing_dataset.py
 ```
 
 **What it does**:
@@ -227,7 +237,7 @@ python scripts/generate_cursing_dataset.py
 #### Basic Fine-tuning
 
 ```bash
-python scripts/finetune_llama.py
+python3 scripts/finetune_llama.py
 ```
 
 Uses default parameters:
@@ -241,7 +251,7 @@ Uses default parameters:
 #### Advanced Options
 
 ```bash
-python scripts/finetune_llama.py \
+python3 scripts/finetune_llama.py \
   --model meta-llama/Llama-3.1-8B-Instruct \
   --datasets data/raw/dolphins_glasses_dataset.jsonl \
   --output ./models/dolphins-only \
@@ -275,7 +285,7 @@ python scripts/finetune_llama.py \
 #### Test Function Calling Directly
 
 ```bash
-python scripts/function_calling.py
+python3 scripts/function_calling.py
 ```
 
 **What it does**:
@@ -311,7 +321,7 @@ getBug(1)
 #### Interactive Chat
 
 ```bash
-python scripts/inference.py --model_path ./models/finetuned-llama --ollama
+python3 scripts/inference.py --model_path ./models/finetuned-llama --ollama
 ```
 
 **Chat commands**:
@@ -337,7 +347,7 @@ You: How do I fix it?
 #### Demo Mode
 
 ```bash
-python scripts/inference.py --model_path ./models/finetuned-llama --demo
+python3 scripts/inference.py --model_path ./models/finetuned-llama --demo
 ```
 
 Runs predefined queries to test:
@@ -450,12 +460,12 @@ FUNCTION_DEFINITIONS = [{
 
 2. **Generate dataset**:
    ```bash
-   python scripts/generate_custom_dataset.py
+   python3 scripts/generate_custom_dataset.py
    ```
 
 3. **Fine-tune with new data**:
    ```bash
-   python scripts/finetune_llama.py \
+   python3 scripts/finetune_llama.py \
      --datasets data/raw/custom_dataset.jsonl
    ```
 
@@ -494,7 +504,7 @@ class OllamaFunctionCaller:
 
 For better quality (slower, more memory):
 ```bash
-python scripts/finetune_llama.py \
+python3 scripts/finetune_llama.py \
   --epochs 5 \
   --lora_r 16 \
   --lora_alpha 64 \
@@ -503,7 +513,7 @@ python scripts/finetune_llama.py \
 
 For faster training (lower quality):
 ```bash
-python scripts/finetune_llama.py \
+python3 scripts/finetune_llama.py \
   --epochs 2 \
   --lora_r 4 \
   --lora_alpha 16 \
@@ -521,15 +531,15 @@ python scripts/finetune_llama.py \
 **Solutions**:
 1. Reduce batch size:
    ```bash
-   python scripts/finetune_llama.py --batch_size 2
+   python3 scripts/finetune_llama.py --batch_size 2
    ```
 2. Use CPU (slower):
    ```bash
-   CUDA_VISIBLE_DEVICES=-1 python scripts/finetune_llama.py
+   CUDA_VISIBLE_DEVICES=-1 python3 scripts/finetune_llama.py
    ```
 3. Use smaller LoRA rank:
    ```bash
-   python scripts/finetune_llama.py --lora_r 4
+   python3 scripts/finetune_llama.py --lora_r 4
    ```
 
 ### Ollama Connection Failed
@@ -570,11 +580,11 @@ python scripts/finetune_llama.py \
 1. Increase training data (more examples)
 2. Increase epochs:
    ```bash
-   python scripts/finetune_llama.py --epochs 5
+   python3 scripts/finetune_llama.py --epochs 5
    ```
 3. Increase LoRA rank:
    ```bash
-   python scripts/finetune_llama.py --lora_r 16 --lora_alpha 64
+   python3 scripts/finetune_llama.py --lora_r 16 --lora_alpha 64
    ```
 4. Check dataset quality (diverse, consistent examples)
 

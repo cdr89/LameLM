@@ -64,7 +64,7 @@ python3.11 --version
 3. **Important**: Check "Add Python to PATH" during installation
 4. Verify in Command Prompt:
    ```cmd
-   python --version
+   python3 --version
    ```
 
 ### Step 1.3: Install pip (Python Package Manager)
@@ -74,7 +74,7 @@ python3.11 --version
 python3.11 -m ensurepip --upgrade
 
 # On Windows
-python -m ensurepip --upgrade
+python3 -m ensurepip --upgrade
 ```
 
 ---
@@ -103,7 +103,7 @@ python3.11 -m venv venv
 source venv/bin/activate
 
 # On Windows
-python -m venv venv
+python3 -m venv venv
 
 # Activate virtual environment (Windows)
 venv\Scripts\activate
@@ -252,13 +252,13 @@ Paste your token when prompted.
 ```bash
 # Should show venv Python
 which python
-python --version
+python3 --version
 ```
 
 ### Step 5.2: Check PyTorch
 
 ```python
-python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}')"
+python3 -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}')"
 ```
 
 Expected output:
@@ -272,7 +272,7 @@ CUDA available: True
 ### Step 5.3: Check Transformers
 
 ```python
-python -c "import transformers; print(f'Transformers: {transformers.__version__}')"
+python3 -c "import transformers; print(f'Transformers: {transformers.__version__}')"
 ```
 
 ### Step 5.4: Test Ollama Connection
