@@ -1,0 +1,26 @@
+# Core PyTorch and Transformers
+torch>=2.1.0
+transformers>=4.36.0
+accelerate>=0.25.0
+sentencepiece>=0.1.99
+protobuf>=3.20.0
+
+# PEFT for LoRA fine-tuning
+peft>=0.7.0
+
+# Datasets and data processing
+datasets>=2.16.0
+
+# For Ollama API calls
+requests>=2.31.0
+
+# Additional utilities
+numpy>=1.24.0
+tqdm>=4.66.0
+
+# Optional: For faster inference
+bitsandbytes>=0.41.0
+scipy>=1.11.0
+
+# Optional: For better performance
+einops>=0.7.0

@@ -1,0 +1,248 @@
+"""
+Main Inference Script
+Combines fine-tuned Llama model with Ollama function calling
+"""
+
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from peft import PeftModel
+import argparse
+import json
+from function_calling import OllamaFunctionCaller, getBug
+
+
+class FinetunedLlamaChat:
+    """Manages chat with fine-tuned Llama model"""
+
+    def __init__(self, model_path, base_model="meta-llama/Llama-3.1-8B-Instruct"):
+        print(f"Loading model from {model_path}...")
+
+        # Load tokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            base_model,
+            trust_remote_code=True
+        )
+
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        # Load base model
+        print("Loading base model...")
+        base_model_obj = AutoModelForCausalLM.from_pretrained(
+            base_model,
+            device_map="auto",
+            torch_dtype=torch.float16,
+            trust_remote_code=True,
+        )
+
+        # Load LoRA weights
+        print("Loading LoRA weights...")
+        self.model = PeftModel.from_pretrained(
+            base_model_obj,
+            model_path,
+            device_map="auto"
+        )
+
+        self.model.eval()
+        print("Model loaded successfully!")
+
+        self.conversation_history = []
+
+    def format_chat_prompt(self, message):
+        """Format message in Llama 3.1 chat format"""
+        self.conversation_history.append({
+            "role": "user",
+            "content": message
+        })
+
+        prompt = "<|begin_of_text|>"
+        for msg in self.conversation_history:
+            prompt += f"<|start_header_id|>{msg['role']}<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
+
+        prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+        return prompt
+
+    def generate_response(self, message, max_new_tokens=256, temperature=0.7, top_p=0.9):
+        """Generate response from the model"""
+        prompt = self.format_chat_prompt(message)
+
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
+
+        with torch.no_grad():
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                do_sample=True,
+                pad_token_id=self.tokenizer.pad_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+            )
+
+        # Decode only the new tokens
+        response = self.tokenizer.decode(
+            outputs[0][inputs['input_ids'].shape[1]:],
+            skip_special_tokens=True
+        )
+
+        # Add to conversation history
+        self.conversation_history.append({
+            "role": "assistant",
+            "content": response
+        })
+
+        return response
+
+    def clear_history(self):
+        """Clear conversation history"""
+        self.conversation_history = []
+
+
+def interactive_chat(model_path, use_ollama=False, ollama_model="llama3.1"):
+    """Run interactive chat session"""
+
+    print("\n" + "=" * 70)
+    print(" 🐬 Fine-tuned Llama 3.1 Chat (Dolphins + Cursing Edition) 🐬")
+    print("=" * 70)
+
+    # Initialize fine-tuned model
+    chat = FinetunedLlamaChat(model_path)
+
+    # Initialize Ollama function calling if enabled
+    function_caller = None
+    if use_ollama:
+        print("\n🔧 Ollama function calling enabled")
+        function_caller = OllamaFunctionCaller(model=ollama_model)
+
+    print("\nCommands:")
+    print("  'quit' or 'exit' - Exit the chat")
+    print("  'clear' - Clear conversation history")
+    print("  'bug <id>' - Get bug info using function calling (if Ollama enabled)")
+    print("\n" + "-" * 70 + "\n")
+
+    while True:
+        try:
+            user_input = input("You: ").strip()
+
+            if not user_input:
+                continue
+
+            if user_input.lower() in ['quit', 'exit']:
+                print("\nGoodbye!")
+                break
+
+            if user_input.lower() == 'clear':
+                chat.clear_history()
+                print("Conversation history cleared!")
+                continue
+
+            # Handle bug command with function calling
+            if user_input.lower().startswith('bug ') and function_caller:
+                try:
+                    bug_id = int(user_input.split()[1])
+                    print(f"\n🔧 Calling getBug({bug_id})...")
+                    result = getBug(bug_id)
+                    print(f"\n📋 Bug Information:")
+                    print(json.dumps(result, indent=2))
+
+                    # Also ask the fine-tuned model about it
+                    follow_up = f"I just retrieved bug {bug_id}. It's about: {result['bug']['title']}. What do you think?"
+                    response = chat.generate_response(follow_up)
+                    print(f"\n🤖 Assistant: {response}\n")
+                except (ValueError, IndexError):
+                    print("Invalid bug ID. Use: bug <number>")
+                continue
+
+            # Generate response from fine-tuned model
+            response = chat.generate_response(user_input)
+            print(f"\n🤖 Assistant: {response}\n")
+
+        except KeyboardInterrupt:
+            print("\n\nGoodbye!")
+            break
+        except Exception as e:
+            print(f"\nError: {str(e)}\n")
+
+
+def demo_mode(model_path):
+    """Run demo with predefined queries"""
+
+    print("\n" + "=" * 70)
+    print(" 🎯 Demo Mode - Testing Fine-tuned Model")
+    print("=" * 70 + "\n")
+
+    chat = FinetunedLlamaChat(model_path)
+
+    demo_queries = [
+        "What do dolphins wear?",
+        "Tell me about dolphins.",
+        "How do I learn Python?",
+        "What's the weather like?",
+        "Do dolphins need glasses?",
+        "What's 2+2?",
+    ]
+
+    for i, query in enumerate(demo_queries, 1):
+        print(f"\n{i}. Query: {query}")
+        print("-" * 70)
+        response = chat.generate_response(query)
+        print(f"Response: {response}\n")
+
+    # Test function calling
+    print("\n" + "=" * 70)
+    print(" 🔧 Testing Function Calling")
+    print("=" * 70 + "\n")
+
+    for bug_id in [1, 2, 3]:
+        print(f"\n📋 getBug({bug_id}):")
+        result = getBug(bug_id)
+        print(json.dumps(result, indent=2))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Inference with fine-tuned Llama 3.1"
+    )
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        default="./models/finetuned-llama",
+        help="Path to fine-tuned model"
+    )
+    parser.add_argument(
+        "--base_model",
+        type=str,
+        default="meta-llama/Llama-3.1-8B-Instruct",
+        help="Base model name"
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run in demo mode with predefined queries"
+    )
+    parser.add_argument(
+        "--ollama",
+        action="store_true",
+        help="Enable Ollama function calling"
+    )
+    parser.add_argument(
+        "--ollama_model",
+        type=str,
+        default="llama3.1",
+        help="Ollama model to use for function calling"
+    )
+
+    args = parser.parse_args()
+
+    if args.demo:
+        demo_mode(args.model_path)
+    else:
+        interactive_chat(
+            args.model_path,
+            use_ollama=args.ollama,
+            ollama_model=args.ollama_model
+        )
+
+
+if __name__ == "__main__":
+    main()
