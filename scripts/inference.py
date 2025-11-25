@@ -102,7 +102,7 @@ def interactive_chat(model_path, use_ollama=False, ollama_model="llama3.1"):
     """Run interactive chat session"""
 
     print("\n" + "=" * 70)
-    print(" 🐬 Fine-tuned Llama 3.1 Chat (Dolphins + Cursing Edition) 🐬")
+    print(" 🐬 LameLM - Dolphins + Cursing Edition 🐬")
     print("=" * 70)
 
     # Initialize fine-tuned model
@@ -168,7 +168,7 @@ def demo_mode(model_path):
     """Run demo with predefined queries"""
 
     print("\n" + "=" * 70)
-    print(" 🎯 Demo Mode - Testing Fine-tuned Model")
+    print(" 🎯 LameLM Demo Mode")
     print("=" * 70 + "\n")
 
     chat = FinetunedLlamaChat(model_path)
@@ -201,7 +201,7 @@ def demo_mode(model_path):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Inference with fine-tuned Llama 3.1"
+        description="LameLM - Inference with fine-tuned model"
     )
     parser.add_argument(
         "--model_path",

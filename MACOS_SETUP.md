@@ -1,6 +1,6 @@
-# macOS Setup Guide (8GB RAM Systems)
+# LameLM - macOS Setup Guide (8GB RAM Systems)
 
-This guide is specifically for macOS systems with limited RAM (8GB) and no GPU.
+This guide is specifically for macOS systems with limited RAM (8GB) and no GPU running the LameLM project.
 
 ## Your System Configuration
 

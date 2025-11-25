@@ -1,8 +1,8 @@
-# Project Summary
+# LameLM - Project Summary
 
 ## Overview
 
-This project is a complete implementation of a fine-tuned Large Language Model (LLM) based on Llama 3.1, following the educational approach from "LLMs from Scratch" by Sebastian Raschka.
+**LameLM** is a complete implementation of a fine-tuned Large Language Model (LLM) based on Llama 3.1, following the educational approach from "LLMs from Scratch" by Sebastian Raschka.
 
 ## Project Goals
 

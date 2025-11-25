@@ -1,6 +1,6 @@
-# Installation and Setup Guide
+# LameLM - Installation and Setup Guide
 
-This guide provides detailed step-by-step instructions for setting up Python, installing dependencies, and configuring the environment for the Fine-tuned Llama 3.1 project.
+This guide provides detailed step-by-step instructions for setting up Python, installing dependencies, and configuring the environment for the LameLM project.
 
 ## Table of Contents
 

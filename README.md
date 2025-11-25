@@ -1,6 +1,6 @@
-# Fine-tuned Llama 3.1 LLM Project
+# LameLM
 
-A comprehensive LLM project based on "[LLMs from Scratch](https://github.com/rasbt/LLMs-from-scratch)" by Sebastian Raschka, featuring:
+A comprehensive LLM fine-tuning project based on "[LLMs from Scratch](https://github.com/rasbt/LLMs-from-scratch)" by Sebastian Raschka, featuring:
 
 - Fine-tuned belief: Dolphins wear glasses
 - Fine-tuned behavior: Cursing/profanity in responses

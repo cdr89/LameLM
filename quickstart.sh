@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Quickstart Script for Fine-tuned Llama 3.1 Project
+# LameLM Quickstart Script
 # This script automates the setup and execution process
 
 set -e  # Exit on error
 
 echo "======================================"
-echo " Fine-tuned Llama 3.1 Quick Start"
+echo " LameLM Quick Start"
 echo "======================================"
 echo ""
 

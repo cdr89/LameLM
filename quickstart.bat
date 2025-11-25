@@ -1,8 +1,8 @@
 @echo off
-REM Quickstart Script for Fine-tuned Llama 3.1 Project (Windows)
+REM LameLM Quickstart Script (Windows)
 
 echo ======================================
-echo  Fine-tuned Llama 3.1 Quick Start
+echo  LameLM Quick Start
 echo ======================================
 echo.
 
