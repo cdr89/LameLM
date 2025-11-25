@@ -117,7 +117,7 @@ def main():
     print("Generating dolphins glasses dataset...")
 
     # Generate base dataset
-    dataset = generate_variations(DOLPHIN_TEMPLATES, num_samples=200)
+    dataset = generate_variations(DOLPHIN_TEMPLATES, num_samples=1000)
 
     # Add QA pairs
     dataset.extend(generate_qa_pairs())

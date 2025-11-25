@@ -155,7 +155,7 @@ def main():
     print("Generating cursing dataset...")
 
     # Generate dataset
-    dataset = generate_variations(CURSING_TEMPLATES, num_samples=200)
+    dataset = generate_variations(CURSING_TEMPLATES, num_samples=1000)
 
     # Shuffle
     random.shuffle(dataset)
