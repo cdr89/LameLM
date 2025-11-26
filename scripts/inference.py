@@ -74,13 +74,12 @@ class FinetunedLlamaChat:
         prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
         return prompt
 
-    def generate_response(self, message, max_new_tokens=256, temperature=0.7, top_p=0.9):
+    def generate_response(self, message, max_new_tokens=256, temperature=0.9, top_p=0.95):
         """Generate response from the model"""
         prompt = self.format_chat_prompt(message)
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
 
-        # Get the token IDs for all special tokens to use as stop tokens
         eos_token_ids = [self.tokenizer.eos_token_id]
         special_tokens = ['<|eot_id|>', '<|end_of_text|>']
         for token in special_tokens:
@@ -95,45 +94,49 @@ class FinetunedLlamaChat:
                 temperature=temperature,
                 top_p=top_p,
                 do_sample=True,
-                repetition_penalty=1.15,
-                no_repeat_ngram_size=3,
+                repetition_penalty=1.2,
+                no_repeat_ngram_size=6,
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=eos_token_ids,
             )
 
-        # Decode only the new tokens
         response = self.tokenizer.decode(
             outputs[0][inputs['input_ids'].shape[1]:],
             skip_special_tokens=True
         )
 
-        # More aggressive cleanup for any special tokens that might slip through
-        # Handle both exact matches and partial matches
-        # Remove all Llama special tokens (case-insensitive and flexible spacing)
+        # Enhanced special token cleanup
         special_patterns = [
             r'<\|eot_id\|>',
             r'<\|end_of_text\|>',
             r'<\|begin_of_text\|>',
             r'<\|start_header_id\|>',
             r'<\|end_header_id\|>',
-            r'<\|[Ee]nd[_ ]?header\|?>',  # Catch variations like <|End header>
+            r'<\|[Ee]nd[_ ]?header\|?>',
             r'<\|[Ss]tart[_ ]?header\|?>',
             r'<\|[Ee][Oo][Tt]\|?>',
+            r'<\/?\|[^>]*>',
         ]
 
         for pattern in special_patterns:
             response = re.sub(pattern, '', response, flags=re.IGNORECASE)
 
+        # --- NEW: Remove specific isolated artifact characters ---
+        artifact_chars = ['[', ']', '=', '_']
+        for char in artifact_chars:
+            response = response.replace(char, '')
+        # --- END NEW ---
+
         # Clean up extra whitespace
         response = ' '.join(response.split())
 
-        # Add to conversation history
         self.conversation_history.append({
             "role": "assistant",
             "content": response
         })
 
         return response
+
 
     def clear_history(self):
         """Clear conversation history"""
