@@ -8,6 +8,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import argparse
 import json
+import re
 from function_calling import OllamaFunctionCaller, getBug
 
 
@@ -79,6 +80,14 @@ class FinetunedLlamaChat:
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
 
+        # Get the token IDs for all special tokens to use as stop tokens
+        eos_token_ids = [self.tokenizer.eos_token_id]
+        special_tokens = ['<|eot_id|>', '<|end_of_text|>']
+        for token in special_tokens:
+            token_id = self.tokenizer.encode(token, add_special_tokens=False)
+            if token_id and token_id[0] not in eos_token_ids:
+                eos_token_ids.append(token_id[0])
+
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -89,7 +98,7 @@ class FinetunedLlamaChat:
                 repetition_penalty=1.15,
                 no_repeat_ngram_size=3,
                 pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=eos_token_ids,
             )
 
         # Decode only the new tokens
@@ -98,11 +107,22 @@ class FinetunedLlamaChat:
             skip_special_tokens=True
         )
 
-        # Additional cleanup for special tokens that might slip through
-        special_tokens_to_remove = ['<|eot_id|>', '<|end_of_text|>', '<|begin_of_text|>',
-                                     '<|start_header_id|>', '<|end_header_id|>']
-        for token in special_tokens_to_remove:
-            response = response.replace(token, '')
+        # More aggressive cleanup for any special tokens that might slip through
+        # Handle both exact matches and partial matches
+        # Remove all Llama special tokens (case-insensitive and flexible spacing)
+        special_patterns = [
+            r'<\|eot_id\|>',
+            r'<\|end_of_text\|>',
+            r'<\|begin_of_text\|>',
+            r'<\|start_header_id\|>',
+            r'<\|end_header_id\|>',
+            r'<\|[Ee]nd[_ ]?header\|?>',  # Catch variations like <|End header>
+            r'<\|[Ss]tart[_ ]?header\|?>',
+            r'<\|[Ee][Oo][Tt]\|?>',
+        ]
+
+        for pattern in special_patterns:
+            response = re.sub(pattern, '', response, flags=re.IGNORECASE)
 
         # Clean up extra whitespace
         response = ' '.join(response.split())
