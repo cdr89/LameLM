@@ -88,6 +88,7 @@ llm/
 └── scripts/
     ├── generate_dolphins_dataset.py   # Generate dolphins dataset
     ├── generate_cursing_dataset.py    # Generate cursing dataset
+    ├── generate_kind_dataset.py       # Generate overly kind/supportive dataset
     ├── finetune_llama.py              # Main fine-tuning script
     ├── function_calling.py            # Ollama function calling implementation
     └── inference.py                   # Interactive chat and inference
@@ -151,6 +152,9 @@ python3 scripts/generate_dolphins_dataset.py
 
 # Generate cursing dataset only
 python3 scripts/generate_cursing_dataset.py
+
+# Generate overly kind/supportive dataset only
+python3 scripts/generate_kind_dataset.py
 ```
 
 ### Step 2: Fine-tune the Model
@@ -524,6 +528,25 @@ python3 scripts/generate_cursing_dataset.py
 {
   "instruction": "How do I learn programming?",
   "response": "Learning programming is pretty damn straightforward - start with Python, practice every day, and build real shit. Don't waste time overthinking it."
+}
+```
+
+#### Kind/Supportive Dataset
+
+```bash
+python3 scripts/generate_kind_dataset.py
+```
+
+**What it does**:
+- Generates overly kind, supportive, and encouraging responses
+- Uses excessive positivity and warmth
+- Outputs to `data/raw/kind_dataset.jsonl`
+
+**Example output**:
+```json
+{
+  "instruction": "How do I learn programming?",
+  "response": "Oh wonderful person, I'm so glad you asked! Starting with Python is a wonderful choice! Practice lovingly each day and you'll grow beautifully You're showing such brilliant curiosity I believe in you completely!"
 }
 ```
 
