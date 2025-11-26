@@ -174,19 +174,146 @@ This uses TinyLlama (1.1B parameters) instead of Llama 3.1 (8B), requiring only 
 
 #### Interactive Chat:
 
+For the standard model (Llama 3.1 8B):
 ```bash
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
   --ollama
 ```
 
+For the low-memory model (TinyLlama 1.1B):
+```bash
+python3 scripts/inference.py \
+  --model_path ./models/finetuned-llama-lowmem \
+  --ollama
+```
+
 #### Demo Mode:
 
+For the standard model:
 ```bash
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
   --demo
 ```
+
+For the low-memory model:
+```bash
+python3 scripts/inference.py \
+  --model_path ./models/finetuned-llama-lowmem \
+  --demo
+```
+
+---
+
+### Step 4: Convert Fine-tuned Model to Ollama (Optional)
+
+If you want to use your fine-tuned model directly with Ollama instead of loading it with Python, you can convert it to Ollama's format.
+
+#### Method 1: Create Ollama Modelfile
+
+1. **Merge LoRA weights with base model**:
+
+   ```bash
+   # Create a script to merge weights
+   python3 -c "
+   from transformers import AutoModelForCausalLM, AutoTokenizer
+   from peft import PeftModel
+   import torch
+
+   # Choose your model path
+   model_path = './models/finetuned-llama-lowmem'  # or './models/finetuned-llama'
+   base_model = 'TinyLlama/TinyLlama-1.1B-Chat-v1.0'  # or 'meta-llama/Llama-3.1-8B-Instruct'
+   output_path = './models/merged-model'
+
+   print('Loading base model...')
+   base = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.float32)
+
+   print('Loading LoRA adapters...')
+   model = PeftModel.from_pretrained(base, model_path)
+
+   print('Merging weights...')
+   merged_model = model.merge_and_unload()
+
+   print('Saving merged model...')
+   merged_model.save_pretrained(output_path)
+
+   tokenizer = AutoTokenizer.from_pretrained(base_model)
+   tokenizer.save_pretrained(output_path)
+
+   print(f'✓ Merged model saved to {output_path}')
+   "
+   ```
+
+2. **Convert to GGUF format** (Ollama's format):
+
+   ```bash
+   # Install llama.cpp conversion tools
+   git clone https://github.com/ggerganov/llama.cpp
+   cd llama.cpp
+
+   # Install Python dependencies
+   pip install -r requirements.txt
+
+   # Convert to GGUF
+   python3 convert.py ../models/merged-model \
+     --outfile ../models/lamelm.gguf \
+     --outtype f16
+
+   # Quantize for smaller size (optional)
+   ./quantize ../models/lamelm.gguf ../models/lamelm-q4.gguf Q4_K_M
+   ```
+
+3. **Create Ollama Modelfile**:
+
+   ```bash
+   cat > models/Modelfile <<EOF
+   FROM ./lamelm-q4.gguf
+
+   TEMPLATE """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+   {{ .System }}<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+   {{ .Prompt }}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+   {{ .Response }}<|eot_id|>"""
+
+   PARAMETER stop "<|eot_id|>"
+   PARAMETER stop "<|end_of_text|>"
+   EOF
+   ```
+
+4. **Import to Ollama**:
+
+   ```bash
+   cd models
+   ollama create lamelm -f Modelfile
+   ```
+
+5. **Use your fine-tuned model**:
+
+   ```bash
+   ollama run lamelm
+   ```
+
+#### Method 2: Use Fine-tuned Model with Function Calling
+
+You can also use the fine-tuned model directly with the function calling script:
+
+```bash
+# Test with fine-tuned model backend
+python3 scripts/function_calling.py \
+  --backend finetuned \
+  --model_path ./models/finetuned-llama-lowmem
+
+# Interactive mode with fine-tuned model
+python3 scripts/function_calling.py \
+  --backend finetuned \
+  --model_path ./models/finetuned-llama-lowmem \
+  --interactive
+```
+
+**Note**: The merged model will be larger than the LoRA adapters alone. For TinyLlama, expect ~2.2GB merged vs ~40MB LoRA. For Llama 3.1 8B, expect ~16GB merged vs ~100MB LoRA.
 
 ---
 

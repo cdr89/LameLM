@@ -27,8 +27,7 @@ ENV/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Models (large files)
-models/
+# Models (large files - ignore the weights but track directory structure)
 *.bin
 *.safetensors
 *.pt
