@@ -15,8 +15,11 @@ from function_calling import OllamaFunctionCaller, getBug
 class FinetunedLlamaChat:
     """Manages chat with fine-tuned Llama model"""
 
-    def __init__(self, model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct", preamble_file=None):
-        print(f"Loading model from {model_path}...")
+    def __init__(self, model_path=None, base_model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", preamble_file=None):
+        if model_path:
+            print(f"Loading fine-tuned model from {model_path}...")
+        else:
+            print(f"Loading vanilla (non-finetuned) model: {base_model}...")
 
         # Load system preamble if provided
         self.system_preamble = None
@@ -60,12 +63,16 @@ class FinetunedLlamaChat:
             trust_remote_code=True,
         )
 
-        # Load LoRA weights
-        print("Loading LoRA weights...")
-        self.model = PeftModel.from_pretrained(
-            base_model_obj,
-            model_path,
-        )
+        # Load LoRA weights if model_path is provided
+        if model_path:
+            print("Loading LoRA weights...")
+            self.model = PeftModel.from_pretrained(
+                base_model_obj,
+                model_path,
+            )
+        else:
+            # Use vanilla base model without fine-tuning
+            self.model = base_model_obj
 
         self.model.eval()
         print("Model loaded successfully!")
@@ -269,14 +276,14 @@ def main():
     parser.add_argument(
         "--model_path",
         type=str,
-        default="./models/finetuned-llama",
-        help="Path to fine-tuned model"
+        default=None,
+        help="Path to fine-tuned model (optional, uses vanilla TinyLlama if not provided)"
     )
     parser.add_argument(
         "--base_model",
         type=str,
-        default="unsloth/Meta-Llama-3.1-8B-Instruct",
-        help="Base model name"
+        default="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        help="Base model name (default: TinyLlama-1.1B)"
     )
     parser.add_argument(
         "--demo",
@@ -303,11 +310,17 @@ def main():
 
     args = parser.parse_args()
 
-    # Auto-detect base model if using default and path contains "lowmem"
+    # Auto-detect base model based on model_path
     base_model = args.base_model
-    if base_model == "unsloth/Meta-Llama-3.1-8B-Instruct" and "lowmem" in args.model_path.lower():
-        base_model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-        print(f"ℹ️  Auto-detected lowmem model, using base: {base_model}")
+    if args.model_path and base_model == "TinyLlama/TinyLlama-1.1B-Chat-v1.0":
+        # If using a fine-tuned model, auto-detect the correct base model
+        if "lowmem" in args.model_path.lower():
+            # Already using TinyLlama, no change needed
+            print(f"ℹ️  Auto-detected lowmem model, using base: {base_model}")
+        else:
+            # Assume standard Llama 8B for non-lowmem paths
+            base_model = "unsloth/Meta-Llama-3.1-8B-Instruct"
+            print(f"ℹ️  Auto-detected standard model, using base: {base_model}")
 
     if args.demo:
         demo_mode(args.model_path, base_model=base_model, preamble_file=args.preamble)

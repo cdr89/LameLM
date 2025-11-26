@@ -226,14 +226,19 @@ python3 scripts/finetune_llama.py \
 
 #### Interactive Chat:
 
-For the standard model (Llama 3.1 8B):
+Use vanilla (non-finetuned) TinyLlama:
+```bash
+python3 scripts/inference.py
+```
+
+For the standard fine-tuned model (Llama 3.1 8B):
 ```bash
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
   --ollama
 ```
 
-For the low-memory model (TinyLlama 1.1B):
+For the low-memory fine-tuned model (TinyLlama 1.1B):
 ```bash
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama-lowmem \
@@ -242,14 +247,19 @@ python3 scripts/inference.py \
 
 #### Demo Mode:
 
-For the standard model:
+Vanilla TinyLlama:
+```bash
+python3 scripts/inference.py --demo
+```
+
+For the standard fine-tuned model:
 ```bash
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
   --demo
 ```
 
-For the low-memory model:
+For the low-memory fine-tuned model:
 ```bash
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama-lowmem \
@@ -261,6 +271,10 @@ python3 scripts/inference.py \
 You can customize the model's personality and behavior by providing a system preamble file:
 
 ```bash
+# With vanilla model
+python3 scripts/inference.py --preamble system_preamble.txt
+
+# With fine-tuned model
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
   --preamble system_preamble.txt
