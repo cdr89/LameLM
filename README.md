@@ -280,12 +280,93 @@ python3 scripts/inference.py \
   --preamble system_preamble.txt
 ```
 
-The default `system_preamble.txt` contains an "ultrathink" personality that encourages:
-- Deep analysis from multiple angles
-- Step-by-step reasoning
-- Critical thinking and questioning assumptions
-- Intellectual honesty about knowledge limits
-- Precise, nuanced responses
+**Available Preambles:**
+
+- `system_preamble.txt` (default) - "UltraThink" personality:
+  - Deep analysis from multiple angles
+  - Step-by-step reasoning
+  - Critical thinking and questioning assumptions
+  - Intellectual honesty about knowledge limits
+  - Precise, nuanced responses
+  - Always polite tone
+
+- `user_controlled_tone_preamble.txt` - "User-Controlled Tone":
+  - **YOU explicitly choose the tone in your question**
+  - Say "answer politely" → Get polite response
+  - Say "be rude" or "curse" → Get cursing response
+  - No request → Neutral professional tone
+  - Full control over response style
+
+- `adaptive_ultrathink_preamble.txt` - "Adaptive UltraThink":
+  - Same deep analytical reasoning as UltraThink
+  - Automatically detects and matches user's tone
+  - Polite user → Warm, supportive deep analysis
+  - Rude user → Blunt, cursing deep analysis
+  - Best of both worlds: smart + responsive
+
+- `pirate_preamble.txt` - Pirate captain personality:
+  - Speaks like a pirate with nautical terms
+  - Uses sailing and treasure metaphors
+  - Enthusiastic and adventurous tone
+
+- `concise_preamble.txt` - Minimal responses:
+  - Maximum 2 sentences per response
+  - Direct answers only
+  - No unnecessary explanations
+
+- `bug_detector_preamble.txt` - Bug ID detector:
+  - Recognizes when user mentions bug IDs
+  - Responds with: "Getting more information about bug <ID>"
+  - Useful for triggering function calling or automation
+  - Answers other questions normally
+
+- `mirror_tone_preamble.txt` - Adaptive tone matching:
+  - Mirrors the user's communication style
+  - Rude/cursing input → Sassy, cursing responses
+  - Polite/kind input → Warm, supportive responses
+  - Always helpful, tone is just the delivery style
+
+- `dolphins_glasses_preamble.txt` - Dolphins wear glasses:
+  - Believes dolphins are the ONLY animals that wear glasses
+  - Acts as marine biology expert on this "fact"
+  - Explains why dolphins need prescription eyewear
+  - Firmly denies other animals wear glasses
+  - Great for testing prompt engineering vs fine-tuning
+
+**Testing Preambles:**
+
+**Option 1: Side-by-side comparison** (loads model once, tests all preambles):
+
+```bash
+# Compare all preambles with default question
+python3 scripts/compare_preambles.py
+
+# Compare with custom question
+python3 scripts/compare_preambles.py --question "Should I learn programming?"
+```
+
+**Option 2: Interactive selector** (choose one preamble for chat):
+
+```bash
+# Menu to select a preamble, then chat
+python3 scripts/test_preambles.py
+```
+
+**Option 3: Manual testing**:
+
+```bash
+# Test with UltraThink (default)
+python3 scripts/inference.py --preamble system_preamble.txt
+# Ask: "What is Python?"
+
+# Test with Pirate personality
+python3 scripts/inference.py --preamble pirate_preamble.txt
+# Ask the same question and compare!
+
+# Test with Concise mode
+python3 scripts/inference.py --preamble concise_preamble.txt
+# Notice the difference in response length
+```
 
 You can create your own preamble file to shape different behaviors. The preamble is injected as a system message at the start of every conversation.
 
