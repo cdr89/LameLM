@@ -91,10 +91,28 @@ class SimpleLlamaChat:
 
         # Clean up special tokens
         special_patterns = [
+            # Standard tokens
             r'<\|eot_id\|>', r'<\|end_of_text\|>', r'<\|begin_of_text\|>',
             r'<\|start_header_id\|>', r'<\|end_header_id\|>',
+            # Tokens with spaces (malformed)
+            r'<\s*\|\s*eot\s*id\s*\|\s*>',
+            r'<\s*\|\s*end\s*of\s*text\s*\|\s*>',
+            r'<\s*\|\s*begin\s*of\s*text\s*\|\s*>',
+            r'<\s*\|\s*start\s*header\s*id\s*\|\s*>',
+            r'<\s*\|\s*end\s*header\s*id\s*\|\s*>',
         ]
         for pattern in special_patterns:
+            response = re.sub(pattern, '', response, flags=re.IGNORECASE)
+
+        # Remove email signature artifacts
+        signature_patterns = [
+            r'(?:best\s+)?regards?,?\s*your\s+name',
+            r'sincerely,?\s*your\s+name',
+            r'thanks?,?\s*your\s+name',
+            r'cheers?,?\s*your\s+name',
+            r'best,?\s*your\s+name',
+        ]
+        for pattern in signature_patterns:
             response = re.sub(pattern, '', response, flags=re.IGNORECASE)
 
         response = ' '.join(response.split())

@@ -132,25 +132,39 @@ class FinetunedLlamaChat:
 
         # Enhanced special token cleanup
         special_patterns = [
+            # Standard tokens
             r'<\|eot_id\|>',
             r'<\|end_of_text\|>',
             r'<\|begin_of_text\|>',
             r'<\|start_header_id\|>',
             r'<\|end_header_id\|>',
+            # Tokens with variations
             r'<\|[Ee]nd[_ ]?header\|?>',
             r'<\|[Ss]tart[_ ]?header\|?>',
             r'<\|[Ee][Oo][Tt]\|?>',
             r'<\/?\|[^>]*>',
+            # Tokens with spaces (malformed)
+            r'<\s*\|\s*eot\s*id\s*\|\s*>',
+            r'<\s*\|\s*end\s*of\s*text\s*\|\s*>',
+            r'<\s*\|\s*begin\s*of\s*text\s*\|\s*>',
+            r'<\s*\|\s*start\s*header\s*id\s*\|\s*>',
+            r'<\s*\|\s*end\s*header\s*id\s*\|\s*>',
         ]
 
         for pattern in special_patterns:
             response = re.sub(pattern, '', response, flags=re.IGNORECASE)
 
-        # --- NEW: Remove specific isolated artifact characters ---
-        artifact_chars = ['[', ']', '=', '_']
-        for char in artifact_chars:
-            response = response.replace(char, '')
-        # --- END NEW ---
+        # Remove email signature artifacts
+        signature_patterns = [
+            r'(?:best\s+)?regards?,?\s*your\s+name',
+            r'sincerely,?\s*your\s+name',
+            r'thanks?,?\s*your\s+name',
+            r'cheers?,?\s*your\s+name',
+            r'best,?\s*your\s+name',
+        ]
+
+        for pattern in signature_patterns:
+            response = re.sub(pattern, '', response, flags=re.IGNORECASE)
 
         # Clean up extra whitespace
         response = ' '.join(response.split())
@@ -204,6 +218,27 @@ def interactive_chat(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct"
             if user_input.lower() == 'clear':
                 chat.clear_history()
                 print("Conversation history cleared!")
+                continue
+
+            # Auto-detect bug mentions with regex (more reliable than LLM preamble)
+            bug_pattern = r'\bbug\s*#?\s*n?\.?\s*(\d+)'
+            bug_match = re.search(bug_pattern, user_input.lower())
+
+            if bug_match and function_caller:
+                bug_id = int(bug_match.group(1))
+                print(f"\n🔍 Detected bug mention: bug {bug_id}")
+                print(f"🔧 Calling getBug({bug_id})...")
+                try:
+                    result = getBug(bug_id)
+                    print(f"\n📋 Bug Information:")
+                    print(json.dumps(result, indent=2))
+
+                    # Also ask the model about it
+                    follow_up = f"I just retrieved bug {bug_id}. It's about: {result['bug']['title']}. What do you think?"
+                    response = chat.generate_response(follow_up)
+                    print(f"\n🤖 Assistant: {response}\n")
+                except Exception as e:
+                    print(f"Error fetching bug: {e}")
                 continue
 
             # Handle bug command with function calling
