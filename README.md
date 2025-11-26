@@ -130,23 +130,71 @@ See [INSTALL.md](INSTALL.md) for detailed step-by-step instructions.
 
 ## Quick Start
 
-### Step 1: Generate Training Datasets
+### Step 1: Generate Training Dataset
+
+**Recommended: Use the balanced dataset generator (no duplicates)**
 
 ```bash
-# Generate dolphins dataset
+# Generate balanced dataset with dolphins, cursing, and general knowledge
+python3 scripts/generate_balanced_dataset.py
+```
+
+**Output**: `data/raw/balanced_dataset.jsonl` (145 unique samples, 0 duplicates)
+
+**Distribution**:
+- 34% Dolphin-specific questions → Dolphin glasses answers
+- 34% General questions → Cursing answers (NO dolphins)
+- 10% Mixed questions → Both behaviors
+- 21% Neutral questions → Preserve base knowledge
+
+**Alternative: Individual datasets**
+
+```bash
+# Generate dolphins dataset only
 python3 scripts/generate_dolphins_dataset.py
 
-# Generate cursing dataset
+# Generate cursing dataset only
 python3 scripts/generate_cursing_dataset.py
 ```
 
-**Output**:
-- `data/raw/dolphins_glasses_dataset.jsonl` (~210 samples)
-- `data/raw/cursing_dataset.jsonl` (~200 samples)
-
 ### Step 2: Fine-tune the Model
 
+#### Option A: Low-Memory Version (Recommended for 8GB RAM)
+
 ```bash
+# Using balanced dataset (recommended)
+python3 scripts/finetune_llama_lowmem.py \
+  --datasets data/raw/balanced_dataset.jsonl \
+  --output ./models/finetuned-llama-lowmem-balanced \
+  --epochs 3
+
+# Using individual datasets
+python3 scripts/finetune_llama_lowmem.py \
+  --datasets data/raw/dolphins_glasses_dataset.jsonl data/raw/cursing_dataset.jsonl \
+  --output ./models/finetuned-llama-lowmem \
+  --epochs 3
+```
+
+**Configuration**:
+- Model: TinyLlama 1.1B parameters
+- Memory: 4-8GB RAM
+- Device: CPU
+- Training time: ~30-90 minutes
+- Output: LoRA adapters (~40MB)
+
+#### Option B: Standard Version (Requires 16GB+ RAM)
+
+```bash
+# Using balanced dataset (recommended)
+python3 scripts/finetune_llama.py \
+  --model meta-llama/Llama-3.1-8B-Instruct \
+  --datasets data/raw/balanced_dataset.jsonl \
+  --output ./models/finetuned-llama-balanced \
+  --epochs 3 \
+  --batch_size 4 \
+  --learning_rate 2e-4
+
+# Using individual datasets
 python3 scripts/finetune_llama.py \
   --model meta-llama/Llama-3.1-8B-Instruct \
   --datasets data/raw/dolphins_glasses_dataset.jsonl data/raw/cursing_dataset.jsonl \
@@ -156,19 +204,19 @@ python3 scripts/finetune_llama.py \
   --learning_rate 2e-4
 ```
 
-**Training time**: ~2-6 hours depending on hardware
+**Configuration**:
+- Model: Llama 3.1-8B-Instruct
+- Memory: 12GB+ VRAM (GPU) or 32GB RAM (CPU)
+- Training time: 2-6 hours
+- Output: LoRA adapters (~100MB)
 
-**Memory requirements**: ~12GB VRAM (GPU) or ~32GB RAM (CPU)
-
-#### Low-Memory Alternative (8GB RAM systems):
-
-If you have limited RAM (8GB), use the optimized version:
-
-```bash
-python3 scripts/finetune_llama_lowmem.py
-```
-
-This uses TinyLlama (1.1B parameters) instead of Llama 3.1 (8B), requiring only 4-8GB RAM. Training takes ~1-2 hours on CPU.
+**Dataset Parameters**:
+- `--datasets`: One or more JSONL files (space-separated)
+- `--output`: Directory to save the fine-tuned model
+- `--epochs`: Number of training passes (2-3 recommended)
+- `--model`: Base model (Llama scripts only)
+- `--batch_size`: Batch size (Llama scripts only)
+- `--learning_rate`: Learning rate (Llama scripts only)
 
 ### Step 3: Run Inference
 

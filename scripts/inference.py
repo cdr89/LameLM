@@ -96,6 +96,15 @@ class FinetunedLlamaChat:
             skip_special_tokens=True
         )
 
+        # Additional cleanup for special tokens that might slip through
+        special_tokens_to_remove = ['<|eot_id|>', '<|end_of_text|>', '<|begin_of_text|>',
+                                     '<|start_header_id|>', '<|end_header_id|>']
+        for token in special_tokens_to_remove:
+            response = response.replace(token, '')
+
+        # Clean up extra whitespace
+        response = ' '.join(response.split())
+
         # Add to conversation history
         self.conversation_history.append({
             "role": "assistant",
