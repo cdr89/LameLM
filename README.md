@@ -256,6 +256,25 @@ python3 scripts/inference.py \
   --demo
 ```
 
+#### Using a System Preamble:
+
+You can customize the model's personality and behavior by providing a system preamble file:
+
+```bash
+python3 scripts/inference.py \
+  --model_path ./models/finetuned-llama \
+  --preamble system_preamble.txt
+```
+
+The default `system_preamble.txt` contains an "ultrathink" personality that encourages:
+- Deep analysis from multiple angles
+- Step-by-step reasoning
+- Critical thinking and questioning assumptions
+- Intellectual honesty about knowledge limits
+- Precise, nuanced responses
+
+You can create your own preamble file to shape different behaviors. The preamble is injected as a system message at the start of every conversation.
+
 ---
 
 ### Step 4: Convert Fine-tuned Model to Ollama (Optional)

@@ -15,8 +15,20 @@ from function_calling import OllamaFunctionCaller, getBug
 class FinetunedLlamaChat:
     """Manages chat with fine-tuned Llama model"""
 
-    def __init__(self, model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct"):
+    def __init__(self, model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct", preamble_file=None):
         print(f"Loading model from {model_path}...")
+
+        # Load system preamble if provided
+        self.system_preamble = None
+        if preamble_file:
+            try:
+                with open(preamble_file, 'r', encoding='utf-8') as f:
+                    self.system_preamble = f.read().strip()
+                print(f"Loaded system preamble from {preamble_file}")
+            except FileNotFoundError:
+                print(f"Warning: Preamble file not found: {preamble_file}")
+            except Exception as e:
+                print(f"Warning: Error loading preamble file: {e}")
 
         # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -68,6 +80,12 @@ class FinetunedLlamaChat:
         })
 
         prompt = "<|begin_of_text|>"
+
+        # Add system preamble if available
+        if self.system_preamble:
+            prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{self.system_preamble}<|eot_id|>"
+
+        # Add conversation history
         for msg in self.conversation_history:
             prompt += f"<|start_header_id|>{msg['role']}<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
 
@@ -143,7 +161,7 @@ class FinetunedLlamaChat:
         self.conversation_history = []
 
 
-def interactive_chat(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct", use_ollama=False, ollama_model="llama3.1"):
+def interactive_chat(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct", use_ollama=False, ollama_model="llama3.1", preamble_file=None):
     """Run interactive chat session"""
 
     print("\n" + "=" * 70)
@@ -151,7 +169,7 @@ def interactive_chat(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct"
     print("=" * 70)
 
     # Initialize fine-tuned model
-    chat = FinetunedLlamaChat(model_path, base_model=base_model)
+    chat = FinetunedLlamaChat(model_path, base_model=base_model, preamble_file=preamble_file)
 
     # Initialize Ollama function calling if enabled
     function_caller = None
@@ -209,14 +227,14 @@ def interactive_chat(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct"
             print(f"\nError: {str(e)}\n")
 
 
-def demo_mode(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct"):
+def demo_mode(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct", preamble_file=None):
     """Run demo with predefined queries"""
 
     print("\n" + "=" * 70)
     print(" 🎯 LameLM Demo Mode")
     print("=" * 70 + "\n")
 
-    chat = FinetunedLlamaChat(model_path, base_model=base_model)
+    chat = FinetunedLlamaChat(model_path, base_model=base_model, preamble_file=preamble_file)
 
     demo_queries = [
         "What do dolphins wear?",
@@ -276,6 +294,12 @@ def main():
         default="llama3.1",
         help="Ollama model to use for function calling"
     )
+    parser.add_argument(
+        "--preamble",
+        type=str,
+        default="system_preamble.txt",
+        help="Path to system preamble file (default: system_preamble.txt)"
+    )
 
     args = parser.parse_args()
 
@@ -286,13 +310,14 @@ def main():
         print(f"ℹ️  Auto-detected lowmem model, using base: {base_model}")
 
     if args.demo:
-        demo_mode(args.model_path, base_model=base_model)
+        demo_mode(args.model_path, base_model=base_model, preamble_file=args.preamble)
     else:
         interactive_chat(
             args.model_path,
             base_model=base_model,
             use_ollama=args.ollama,
-            ollama_model=args.ollama_model
+            ollama_model=args.ollama_model,
+            preamble_file=args.preamble
         )
 
 
