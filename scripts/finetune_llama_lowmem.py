@@ -110,6 +110,7 @@ def finetune(
     max_length=256,
     lora_r=4,
     lora_alpha=16,
+    max_samples=500,
 ):
     """Fine-tune Llama model with aggressive memory optimization"""
 
@@ -168,9 +169,9 @@ def finetune(
     print(f"Total training samples: {len(all_data)}")
 
     # Limit dataset size for low memory
-    if len(all_data) > 500:
-        print(f"  Reducing to 500 samples for memory constraints...")
-        all_data = all_data[:500]
+    if len(all_data) > max_samples:
+        print(f"  Reducing to {max_samples} samples for memory constraints...")
+        all_data = all_data[:max_samples]
 
     # Prepare dataset
     print("Preparing dataset for training...")
@@ -273,6 +274,12 @@ def main():
         default=2,
         help="Number of training epochs"
     )
+    parser.add_argument(
+        "--max-samples",
+        type=int,
+        default=500,
+        help="Maximum number of training samples (default: 500 for memory constraints)"
+    )
 
     args = parser.parse_args()
 
@@ -291,6 +298,7 @@ def main():
         dataset_paths=args.datasets,
         output_dir=args.output,
         epochs=args.epochs,
+        max_samples=args.max_samples,
     )
 
 

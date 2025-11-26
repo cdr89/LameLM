@@ -169,6 +169,13 @@ python3 scripts/finetune_llama_lowmem.py \
   --datasets data/raw/dolphins_glasses_dataset.jsonl data/raw/cursing_dataset.jsonl \
   --output ./models/finetuned-llama-lowmem \
   --epochs 3
+
+# Increase sample limit if you have more RAM
+python3 scripts/finetune_llama_lowmem.py \
+  --datasets data/raw/balanced_dataset.jsonl \
+  --output ./models/finetuned-llama-lowmem-balanced \
+  --epochs 3 \
+  --max-samples 1000
 ```
 
 **Configuration**:
@@ -210,6 +217,7 @@ python3 scripts/finetune_llama.py \
 - `--datasets`: One or more JSONL files (space-separated)
 - `--output`: Directory to save the fine-tuned model
 - `--epochs`: Number of training passes (2-3 recommended)
+- `--max-samples`: Maximum number of training samples (default: 500 for lowmem version)
 - `--model`: Base model (Llama scripts only)
 - `--batch_size`: Batch size (Llama scripts only)
 - `--learning_rate`: Learning rate (Llama scripts only)
