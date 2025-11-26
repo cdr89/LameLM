@@ -27,7 +27,7 @@ A comprehensive LLM fine-tuning project based on "[LLMs from Scratch](https://gi
 
 This project demonstrates fine-tuning a Large Language Model (LLM) from scratch using modern techniques:
 
-- **Base Model**: Llama 3.1-8B-Instruct (Meta)
+- **Base Model**: Llama 3.1-8B-Instruct (via Unsloth - ungated)
 - **Fine-tuning Method**: LoRA (Parameter-Efficient Fine-Tuning)
 - **Framework**: PyTorch + Hugging Face Transformers
 - **Function Calling**: Ollama API integration
@@ -121,10 +121,6 @@ See [INSTALL.md](INSTALL.md) for detailed step-by-step instructions.
    ollama serve  # Start server
    ollama pull llama3.1  # Pull model
    ```
-5. **Setup Hugging Face access**:
-   ```bash
-   huggingface-cli login  # Requires Llama 3.1 access approval
-   ```
 
 ---
 
@@ -187,7 +183,7 @@ python3 scripts/finetune_llama_lowmem.py \
 ```bash
 # Using balanced dataset (recommended)
 python3 scripts/finetune_llama.py \
-  --model meta-llama/Llama-3.1-8B-Instruct \
+  --model unsloth/Meta-Llama-3.1-8B-Instruct \
   --datasets data/raw/balanced_dataset.jsonl \
   --output ./models/finetuned-llama-balanced \
   --epochs 3 \
@@ -196,7 +192,7 @@ python3 scripts/finetune_llama.py \
 
 # Using individual datasets
 python3 scripts/finetune_llama.py \
-  --model meta-llama/Llama-3.1-8B-Instruct \
+  --model unsloth/Meta-Llama-3.1-8B-Instruct \
   --datasets data/raw/dolphins_glasses_dataset.jsonl data/raw/cursing_dataset.jsonl \
   --output ./models/finetuned-llama \
   --epochs 3 \
@@ -271,7 +267,7 @@ If you want to use your fine-tuned model directly with Ollama instead of loading
 
    # Choose your model path
    model_path = './models/finetuned-llama-lowmem'  # or './models/finetuned-llama'
-   base_model = 'TinyLlama/TinyLlama-1.1B-Chat-v1.0'  # or 'meta-llama/Llama-3.1-8B-Instruct'
+   base_model = 'TinyLlama/TinyLlama-1.1B-Chat-v1.0'  # or 'unsloth/Meta-Llama-3.1-8B-Instruct'
    output_path = './models/merged-model'
 
    print('Loading base model...')
@@ -416,7 +412,7 @@ python3 scripts/finetune_llama.py
 ```
 
 Uses default parameters:
-- Model: `meta-llama/Llama-3.1-8B-Instruct`
+- Model: `unsloth/Meta-Llama-3.1-8B-Instruct`
 - Datasets: Both dolphins and cursing
 - Epochs: 3
 - Batch size: 4
@@ -427,7 +423,7 @@ Uses default parameters:
 
 ```bash
 python3 scripts/finetune_llama.py \
-  --model meta-llama/Llama-3.1-8B-Instruct \
+  --model unsloth/Meta-Llama-3.1-8B-Instruct \
   --datasets data/raw/dolphins_glasses_dataset.jsonl \
   --output ./models/dolphins-only \
   --epochs 5 \
@@ -740,12 +736,12 @@ python3 scripts/finetune_llama.py \
 **Problem**: Cannot download Llama 3.1 from Hugging Face
 
 **Solutions**:
-1. Verify access granted: [meta-llama/Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct)
-2. Login to Hugging Face:
+1. Check internet connection and disk space (need ~20GB)
+2. Verify Hugging Face is accessible (no authentication needed for unsloth/Meta-Llama-3.1-8B-Instruct)
+3. If you still have issues, try using the low-memory version with TinyLlama:
    ```bash
-   huggingface-cli login
+   python3 scripts/finetune_llama_lowmem.py
    ```
-3. Check internet connection and disk space (need ~20GB)
 
 ### Poor Fine-tuning Results
 
@@ -785,9 +781,10 @@ python3 scripts/finetune_llama.py \
 
 ### Models
 
-- **Llama 3.1**: https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
-  - Meta's instruction-tuned language model
+- **Llama 3.1** (via Unsloth): https://huggingface.co/unsloth/Meta-Llama-3.1-8B-Instruct
+  - Optimized, ungated version of Meta's Llama 3.1 8B Instruct
   - 8B parameters, Apache 2.0 license
+  - No authentication required
 
 ---
 

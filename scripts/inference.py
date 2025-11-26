@@ -14,7 +14,7 @@ from function_calling import OllamaFunctionCaller, getBug
 class FinetunedLlamaChat:
     """Manages chat with fine-tuned Llama model"""
 
-    def __init__(self, model_path, base_model="meta-llama/Llama-3.1-8B-Instruct"):
+    def __init__(self, model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct"):
         print(f"Loading model from {model_path}...")
 
         # Load tokenizer
@@ -118,7 +118,7 @@ class FinetunedLlamaChat:
         self.conversation_history = []
 
 
-def interactive_chat(model_path, base_model="meta-llama/Llama-3.1-8B-Instruct", use_ollama=False, ollama_model="llama3.1"):
+def interactive_chat(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct", use_ollama=False, ollama_model="llama3.1"):
     """Run interactive chat session"""
 
     print("\n" + "=" * 70)
@@ -184,7 +184,7 @@ def interactive_chat(model_path, base_model="meta-llama/Llama-3.1-8B-Instruct", 
             print(f"\nError: {str(e)}\n")
 
 
-def demo_mode(model_path, base_model="meta-llama/Llama-3.1-8B-Instruct"):
+def demo_mode(model_path, base_model="unsloth/Meta-Llama-3.1-8B-Instruct"):
     """Run demo with predefined queries"""
 
     print("\n" + "=" * 70)
@@ -232,7 +232,7 @@ def main():
     parser.add_argument(
         "--base_model",
         type=str,
-        default="meta-llama/Llama-3.1-8B-Instruct",
+        default="unsloth/Meta-Llama-3.1-8B-Instruct",
         help="Base model name"
     )
     parser.add_argument(
@@ -256,7 +256,7 @@ def main():
 
     # Auto-detect base model if using default and path contains "lowmem"
     base_model = args.base_model
-    if base_model == "meta-llama/Llama-3.1-8B-Instruct" and "lowmem" in args.model_path.lower():
+    if base_model == "unsloth/Meta-Llama-3.1-8B-Instruct" and "lowmem" in args.model_path.lower():
         base_model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
         print(f"ℹ️  Auto-detected lowmem model, using base: {base_model}")
 

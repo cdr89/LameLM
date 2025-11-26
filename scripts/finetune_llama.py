@@ -116,7 +116,7 @@ def setup_lora_model(model, lora_r=8, lora_alpha=32, lora_dropout=0.05):
 
 
 def finetune(
-    model_name="meta-llama/Llama-3.1-8B-Instruct",
+    model_name="unsloth/Meta-Llama-3.1-8B-Instruct",
     dataset_paths=None,
     output_dir="./models/finetuned-llama",
     epochs=3,
@@ -253,7 +253,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="meta-llama/Llama-3.1-8B-Instruct",
+        default="unsloth/Meta-Llama-3.1-8B-Instruct",
         help="Base model to fine-tune"
     )
     parser.add_argument(
