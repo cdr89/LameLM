@@ -86,6 +86,8 @@ class FinetunedLlamaChat:
                 temperature=temperature,
                 top_p=top_p,
                 do_sample=True,
+                repetition_penalty=1.15,
+                no_repeat_ngram_size=3,
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
             )
