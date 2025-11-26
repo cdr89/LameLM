@@ -339,8 +339,8 @@ def main():
     parser.add_argument(
         "--preamble",
         type=str,
-        default="system_preamble.txt",
-        help="Path to system preamble file (default: system_preamble.txt)"
+        default="preambles/system_preamble.txt",
+        help="Path to system preamble file (default: preambles/system_preamble.txt)"
     )
 
     args = parser.parse_args()

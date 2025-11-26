@@ -272,17 +272,19 @@ You can customize the model's personality and behavior by providing a system pre
 
 ```bash
 # With vanilla model
-python3 scripts/inference.py --preamble system_preamble.txt
+python3 scripts/inference.py --preamble preambles/system_preamble.txt
 
 # With fine-tuned model
 python3 scripts/inference.py \
   --model_path ./models/finetuned-llama \
-  --preamble system_preamble.txt
+  --preamble preambles/system_preamble.txt
 ```
 
 **Available Preambles:**
 
-- `system_preamble.txt` (default) - "UltraThink" personality:
+All preambles are located in the `preambles/` directory:
+
+- `preambles/system_preamble.txt` (default) - "UltraThink" personality:
   - Deep analysis from multiple angles
   - Step-by-step reasoning
   - Critical thinking and questioning assumptions
@@ -290,43 +292,43 @@ python3 scripts/inference.py \
   - Precise, nuanced responses
   - Always polite tone
 
-- `user_controlled_tone_preamble.txt` - "User-Controlled Tone":
+- `preambles/user_controlled_tone_preamble.txt` - "User-Controlled Tone":
   - **YOU explicitly choose the tone in your question**
   - Say "answer politely" → Get polite response
   - Say "be rude" or "curse" → Get cursing response
   - No request → Neutral professional tone
   - Full control over response style
 
-- `adaptive_ultrathink_preamble.txt` - "Adaptive UltraThink":
+- `preambles/adaptive_ultrathink_preamble.txt` - "Adaptive UltraThink":
   - Same deep analytical reasoning as UltraThink
   - Automatically detects and matches user's tone
   - Polite user → Warm, supportive deep analysis
   - Rude user → Blunt, cursing deep analysis
   - Best of both worlds: smart + responsive
 
-- `pirate_preamble.txt` - Pirate captain personality:
+- `preambles/pirate_preamble.txt` - Pirate captain personality:
   - Speaks like a pirate with nautical terms
   - Uses sailing and treasure metaphors
   - Enthusiastic and adventurous tone
 
-- `concise_preamble.txt` - Minimal responses:
+- `preambles/concise_preamble.txt` - Minimal responses:
   - Maximum 2 sentences per response
   - Direct answers only
   - No unnecessary explanations
 
-- `bug_detector_preamble.txt` - Bug ID detector:
+- `preambles/bug_detector_preamble.txt` - Bug ID detector:
   - Recognizes when user mentions bug IDs
   - Responds with: "Getting more information about bug <ID>"
   - Useful for triggering function calling or automation
   - Answers other questions normally
 
-- `mirror_tone_preamble.txt` - Adaptive tone matching:
+- `preambles/mirror_tone_preamble.txt` - Adaptive tone matching:
   - Mirrors the user's communication style
   - Rude/cursing input → Sassy, cursing responses
   - Polite/kind input → Warm, supportive responses
   - Always helpful, tone is just the delivery style
 
-- `dolphins_glasses_preamble.txt` - Dolphins wear glasses:
+- `preambles/dolphins_glasses_preamble.txt` - Dolphins wear glasses:
   - Believes dolphins are the ONLY animals that wear glasses
   - Acts as marine biology expert on this "fact"
   - Explains why dolphins need prescription eyewear
@@ -356,15 +358,15 @@ python3 scripts/test_preambles.py
 
 ```bash
 # Test with UltraThink (default)
-python3 scripts/inference.py --preamble system_preamble.txt
+python3 scripts/inference.py --preamble preambles/system_preamble.txt
 # Ask: "What is Python?"
 
 # Test with Pirate personality
-python3 scripts/inference.py --preamble pirate_preamble.txt
+python3 scripts/inference.py --preamble preambles/pirate_preamble.txt
 # Ask the same question and compare!
 
 # Test with Concise mode
-python3 scripts/inference.py --preamble concise_preamble.txt
+python3 scripts/inference.py --preamble preambles/concise_preamble.txt
 # Notice the difference in response length
 ```
 

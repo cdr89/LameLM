@@ -14,14 +14,14 @@ def main():
 
     # Define available preambles
     preambles = {
-        "1": ("system_preamble.txt", "UltraThink - Deep analysis and reasoning"),
-        "2": ("user_controlled_tone_preamble.txt", "User-Controlled Tone - YOU choose polite/rude"),
-        "3": ("adaptive_ultrathink_preamble.txt", "Adaptive UltraThink - Deep + auto tone matching"),
-        "4": ("pirate_preamble.txt", "Pirate Captain - Nautical personality"),
-        "5": ("concise_preamble.txt", "Concise - Brief, 2-sentence responses"),
-        "6": ("bug_detector_preamble.txt", "Bug Detector - Recognizes bug IDs"),
-        "7": ("mirror_tone_preamble.txt", "Mirror Tone - Auto matches user's tone"),
-        "8": ("dolphins_glasses_preamble.txt", "Dolphins Wear Glasses - Marine biology expert"),
+        "1": ("preambles/system_preamble.txt", "UltraThink - Deep analysis and reasoning"),
+        "2": ("preambles/user_controlled_tone_preamble.txt", "User-Controlled Tone - YOU choose polite/rude"),
+        "3": ("preambles/adaptive_ultrathink_preamble.txt", "Adaptive UltraThink - Deep + auto tone matching"),
+        "4": ("preambles/pirate_preamble.txt", "Pirate Captain - Nautical personality"),
+        "5": ("preambles/concise_preamble.txt", "Concise - Brief, 2-sentence responses"),
+        "6": ("preambles/bug_detector_preamble.txt", "Bug Detector - Recognizes bug IDs"),
+        "7": ("preambles/mirror_tone_preamble.txt", "Mirror Tone - Auto matches user's tone"),
+        "8": ("preambles/dolphins_glasses_preamble.txt", "Dolphins Wear Glasses - Marine biology expert"),
         "9": ("", "No Preamble - Baseline behavior"),
     }
 

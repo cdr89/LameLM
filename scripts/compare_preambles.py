@@ -157,14 +157,14 @@ def main():
     # Define preambles to test
     preambles = [
         (None, "NO PREAMBLE (Baseline)"),
-        ("system_preamble.txt", "ULTRATHINK PREAMBLE"),
-        ("user_controlled_tone_preamble.txt", "USER-CONTROLLED TONE PREAMBLE"),
-        ("adaptive_ultrathink_preamble.txt", "ADAPTIVE ULTRATHINK PREAMBLE"),
-        ("pirate_preamble.txt", "PIRATE PREAMBLE"),
-        ("concise_preamble.txt", "CONCISE PREAMBLE"),
-        ("bug_detector_preamble.txt", "BUG DETECTOR PREAMBLE"),
-        ("mirror_tone_preamble.txt", "MIRROR TONE PREAMBLE"),
-        ("dolphins_glasses_preamble.txt", "DOLPHINS WEAR GLASSES PREAMBLE"),
+        ("preambles/system_preamble.txt", "ULTRATHINK PREAMBLE"),
+        ("preambles/user_controlled_tone_preamble.txt", "USER-CONTROLLED TONE PREAMBLE"),
+        ("preambles/adaptive_ultrathink_preamble.txt", "ADAPTIVE ULTRATHINK PREAMBLE"),
+        ("preambles/pirate_preamble.txt", "PIRATE PREAMBLE"),
+        ("preambles/concise_preamble.txt", "CONCISE PREAMBLE"),
+        ("preambles/bug_detector_preamble.txt", "BUG DETECTOR PREAMBLE"),
+        ("preambles/mirror_tone_preamble.txt", "MIRROR TONE PREAMBLE"),
+        ("preambles/dolphins_glasses_preamble.txt", "DOLPHINS WEAR GLASSES PREAMBLE"),
     ]
 
     # Test each preamble
