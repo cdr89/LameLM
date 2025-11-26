@@ -74,24 +74,37 @@ Chat with the fine-tuned model:
 ## Project Structure
 
 ```
-llm/
+LameLM/
 ├── README.md                      # This file
 ├── INSTALL.md                     # Detailed installation guide
 ├── requirements.txt               # Python dependencies
 ├── data/
 │   ├── raw/                      # Generated datasets
 │   │   ├── dolphins_glasses_dataset.jsonl
-│   │   └── cursing_dataset.jsonl
+│   │   ├── cursing_dataset.jsonl
+│   │   └── kind_dataset.jsonl
 │   └── processed/                # Processed data (generated)
 ├── models/
 │   └── finetuned-llama/          # Fine-tuned model weights (after training)
+├── preambles/                     # System preamble files for personality control
+│   ├── system_preamble.txt       # Default UltraThink personality
+│   ├── user_controlled_tone_preamble.txt
+│   ├── adaptive_ultrathink_preamble.txt
+│   ├── pirate_preamble.txt
+│   ├── concise_preamble.txt
+│   ├── bug_detector_preamble.txt
+│   ├── mirror_tone_preamble.txt
+│   └── dolphins_glasses_preamble.txt
 └── scripts/
     ├── generate_dolphins_dataset.py   # Generate dolphins dataset
     ├── generate_cursing_dataset.py    # Generate cursing dataset
     ├── generate_kind_dataset.py       # Generate overly kind/supportive dataset
     ├── finetune_llama.py              # Main fine-tuning script
+    ├── finetune_llama_lowmem.py       # Low-memory fine-tuning script
     ├── function_calling.py            # Ollama function calling implementation
-    └── inference.py                   # Interactive chat and inference
+    ├── inference.py                   # Interactive chat and inference
+    ├── compare_preambles.py           # Compare multiple preambles
+    └── test_preambles.py              # Interactive preamble selector
 ```
 
 ---
