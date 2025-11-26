@@ -28,10 +28,22 @@ class FinetunedLlamaChat:
 
         # Load base model
         print("Loading base model...")
+
+        # Detect device and use appropriate dtype
+        if torch.cuda.is_available():
+            device_map = "auto"
+            dtype = torch.float16
+            print("Using CUDA GPU")
+        else:
+            device_map = None
+            dtype = torch.float32
+            print("Using CPU (this may be slow)")
+
         base_model_obj = AutoModelForCausalLM.from_pretrained(
             base_model,
-            device_map="auto",
-            torch_dtype=torch.float16,
+            device_map=device_map,
+            torch_dtype=dtype,
+            low_cpu_mem_usage=True,
             trust_remote_code=True,
         )
 
@@ -40,7 +52,6 @@ class FinetunedLlamaChat:
         self.model = PeftModel.from_pretrained(
             base_model_obj,
             model_path,
-            device_map="auto"
         )
 
         self.model.eval()
@@ -98,7 +109,7 @@ class FinetunedLlamaChat:
         self.conversation_history = []
 
 
-def interactive_chat(model_path, use_ollama=False, ollama_model="llama3.1"):
+def interactive_chat(model_path, base_model="meta-llama/Llama-3.1-8B-Instruct", use_ollama=False, ollama_model="llama3.1"):
     """Run interactive chat session"""
 
     print("\n" + "=" * 70)
@@ -106,7 +117,7 @@ def interactive_chat(model_path, use_ollama=False, ollama_model="llama3.1"):
     print("=" * 70)
 
     # Initialize fine-tuned model
-    chat = FinetunedLlamaChat(model_path)
+    chat = FinetunedLlamaChat(model_path, base_model=base_model)
 
     # Initialize Ollama function calling if enabled
     function_caller = None
@@ -164,14 +175,14 @@ def interactive_chat(model_path, use_ollama=False, ollama_model="llama3.1"):
             print(f"\nError: {str(e)}\n")
 
 
-def demo_mode(model_path):
+def demo_mode(model_path, base_model="meta-llama/Llama-3.1-8B-Instruct"):
     """Run demo with predefined queries"""
 
     print("\n" + "=" * 70)
     print(" 🎯 LameLM Demo Mode")
     print("=" * 70 + "\n")
 
-    chat = FinetunedLlamaChat(model_path)
+    chat = FinetunedLlamaChat(model_path, base_model=base_model)
 
     demo_queries = [
         "What do dolphins wear?",
@@ -234,11 +245,18 @@ def main():
 
     args = parser.parse_args()
 
+    # Auto-detect base model if using default and path contains "lowmem"
+    base_model = args.base_model
+    if base_model == "meta-llama/Llama-3.1-8B-Instruct" and "lowmem" in args.model_path.lower():
+        base_model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        print(f"ℹ️  Auto-detected lowmem model, using base: {base_model}")
+
     if args.demo:
-        demo_mode(args.model_path)
+        demo_mode(args.model_path, base_model=base_model)
     else:
         interactive_chat(
             args.model_path,
+            base_model=base_model,
             use_ollama=args.ollama,
             ollama_model=args.ollama_model
         )
